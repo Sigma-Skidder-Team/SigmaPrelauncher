@@ -48,7 +48,7 @@ public class JelloPrelauncher {
       System.out.println("Starting...");
       new File(sigmaDir, "SigmaJello.jar");
       launchArgs = args;
-      this.versionManager = new VersionManager("https://github.com/MarkGG8181/cloud/raw/refs/heads/main/sigma/version_manifest.json");
+      this.versionManager = new VersionManager("https://github.com/MarkGG8181/cloud/raw/refs/heads/main/sigma/download/version_manifest.json");
       this.setupWindow();
       Iterator<Entry<String, Version>> var3 = this.versionManager.getVersions().entrySet().iterator();
       if (var3.hasNext()) {
