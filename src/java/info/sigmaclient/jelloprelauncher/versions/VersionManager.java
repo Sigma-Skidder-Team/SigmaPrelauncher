@@ -34,14 +34,11 @@ public class VersionManager {
             this.versions.clear();
          }
 
-         Iterator var9 = versionArrayJson.iterator();
-
-         while(var9.hasNext()) {
-            JsonValue value = (JsonValue)var9.next();
-            JsonObject versionInfo = value.asObject();
-            this.versions.remove(versionInfo.getString("id", (String)null));
-            this.versions.put(versionInfo.getString("id", (String)null), new Version(versionInfo.getString("id", (String)null), versionInfo.getString("url", (String)null), false));
-         }
+          for (JsonValue value : versionArrayJson) {
+              JsonObject versionInfo = value.asObject();
+              this.versions.remove(versionInfo.getString("id", null));
+              this.versions.put(versionInfo.getString("id", null), new Version(versionInfo.getString("id", null), versionInfo.getString("url", null), false));
+          }
       }
 
    }

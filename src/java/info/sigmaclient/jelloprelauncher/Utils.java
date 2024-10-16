@@ -16,8 +16,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Utils {
-   private static final char[] hexArray = "0123456789abcdef".toCharArray();
-
    public static String queryUrl(String url) {
       try {
          HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -40,6 +38,8 @@ public class Utils {
       return (query == null) ? null : Json.parse(query.replace("\"size\": ,", "")).asObject();
    }
 
+   private static final char[] hexArray = "0123456789abcdef".toCharArray();
+
    public static String getFileSha1Sum(File file) {
       try {
          MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -52,7 +52,6 @@ public class Utils {
          }
          return bytesToHex(digest.digest());
       } catch (NoSuchAlgorithmException | IOException e) {
-         e.printStackTrace();
          return "";
       }
    }

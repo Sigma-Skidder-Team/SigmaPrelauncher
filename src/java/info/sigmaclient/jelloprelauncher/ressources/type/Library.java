@@ -24,7 +24,7 @@ public class Library {
       return new File(Utils.getWorkingDirectory(), "libraries" + File.separator + this.path.replaceAll("//", File.separator));
    }
 
-   public String getSha1() {
+   public String getHash() {
       return this.sha1;
    }
 

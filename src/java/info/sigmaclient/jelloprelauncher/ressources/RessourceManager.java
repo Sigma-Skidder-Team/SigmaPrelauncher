@@ -11,14 +11,10 @@ import info.sigmaclient.jelloprelauncher.ressources.type.Client;
 import info.sigmaclient.jelloprelauncher.ressources.type.Library;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -159,8 +155,12 @@ public class RessourceManager {
    private int downloadLibrary(Library library, DownloadProgress progress, int totalSize, int downloadedSize) throws IOException {
       File destination = new File(Utils.getWorkingDirectory(), "libraries" + File.separator + library.getPath().replace("//", File.separator));
 
-      if (!destination.exists() || !Utils.getFileSha1Sum(destination).equals(library.getSha1())) {
+      String sha1 = library.getHash();
+      String sha2 = Utils.getFileSha1Sum(destination);
+
+      if (!destination.exists() || !Objects.equals(sha2, sha1)) {
          Utils.downloadFileFromUrl(library.getUrl(), destination, null);
+         System.out.println(library.getUrl() + " - " + library.getHash());
          progress.update(downloadedSize, totalSize);
          extractLibraryIfNeeded(library, destination);
          return library.getSize();
@@ -193,7 +193,11 @@ public class RessourceManager {
 
    private int downloadClient(DownloadProgress progress, int totalSize, int downloadedSize) throws IOException {
       File clientPath = getClientPath();
-      if (!clientPath.exists() || !Utils.getFileSha1Sum(clientPath).equals(client.getHash())) {
+
+      String sha1 = client.getHash();
+      String sha2 = Utils.getFileSha1Sum(clientPath);
+
+      if (!clientPath.exists() || !Objects.equals(sha2, sha1)) {
          Utils.downloadFileFromUrl(client.getUrl(), clientPath, (size, total) -> progress.update(downloadedSize + size, totalSize));
          return client.getSize();
       }

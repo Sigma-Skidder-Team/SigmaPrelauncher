@@ -26,6 +26,8 @@ public class Version {
    public String getDisplayName() {
       if (this.id.equals("1.16-rc1")) {
          return "1.16.1 - 1.8 (Optifine)";
+      } else if (this.id.equals("1.15.2")) {
+         return "1.15.2 - 1.8 (Optifine)";
       } else {
          return this.id.equals("1.16.4") ? "1.16.4 - 1.8 (Optifine)" : this.id;
       }
