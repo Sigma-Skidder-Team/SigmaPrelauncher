@@ -6,7 +6,6 @@ import com.eclipsesource.json.JsonValue;
 import info.sigmaclient.jelloprelauncher.Utils;
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class VersionManager {
    HashMap<String, Version> versions = new HashMap();
