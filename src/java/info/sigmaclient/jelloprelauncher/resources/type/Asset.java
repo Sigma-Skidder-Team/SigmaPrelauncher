@@ -1,0 +1,32 @@
+package info.sigmaclient.jelloprelauncher.resources.type;
+
+public class Asset {
+    private final String name, hash;
+    private final int size;
+
+    public Asset(String name, String hash, int size) {
+        this.name = name;
+        this.hash = hash;
+        this.size = size;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getHash() {
+        return this.hash;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public String getUrl() {
+        return "https://resources.download.minecraft.net/" + this.hash.substring(0, 2) + "/" + this.hash;
+    }
+
+    public String toString() {
+        return this.name + " : " + this.hash + " : " + this.size;
+    }
+}
