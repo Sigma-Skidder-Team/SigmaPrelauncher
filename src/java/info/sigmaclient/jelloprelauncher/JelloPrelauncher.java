@@ -25,7 +25,7 @@ import javax.swing.SwingUtilities;
 
 public class JelloPrelauncher {
     public static JelloPrelauncher shared;
-    private DownloadFrame downloadFrame;
+    DownloadFrame df;
     private static String[] launchArgs;
     private static final File sigmaDir = Utils.getSigmaDirectory();
     private static final File jreDir;
@@ -56,7 +56,7 @@ public class JelloPrelauncher {
             this.toLaunch = v.getValue();
         }
 
-        this.downloadFrame.setVersions(this.versionManager.getVersions());
+        this.df.setVersions(this.versionManager.getVersions());
     }
 
     public void setupRuntime() {
@@ -75,7 +75,7 @@ public class JelloPrelauncher {
         if (!jreDir.exists()) {
             try {
                 File temporaryJreFile = File.createTempFile("sigma", "jre");
-                Utils.downloadFileFromUrl("https://jelloprg.sigmaclient.cloud/download/" + platform + "/jre", temporaryJreFile, (totalDownloadedSize, totalFileSize) -> this.downloadFrame.setProgress((int) (100L * totalDownloadedSize / totalFileSize), "Updating Runtime"));
+                Utils.downloadFileFromUrl("https://jelloprg.sigmaclient.cloud/download/" + platform + "/jre", temporaryJreFile, (totalDownloadedSize, totalFileSize) -> this.df.setProgress((int) (100L * totalDownloadedSize / totalFileSize), "Updating Runtime"));
                 byte[] buffer = new byte[1024];
                 ZipInputStream zis = new ZipInputStream(Files.newInputStream(temporaryJreFile.toPath()));
 
@@ -109,11 +109,11 @@ public class JelloPrelauncher {
     }
 
     private void setupWindow() {
-        if (this.downloadFrame == null) {
-            SwingUtilities.invokeLater(() -> JelloPrelauncher.this.downloadFrame = new DownloadFrame());
+        if (this.df == null) {
+            SwingUtilities.invokeLater(() -> JelloPrelauncher.this.df = new DownloadFrame());
         }
 
-        while (this.downloadFrame == null) {
+        while (this.df == null) {
             try {
                 Thread.sleep(200L);
             } catch (InterruptedException var2) {
@@ -203,7 +203,7 @@ public class JelloPrelauncher {
     }
 
     public void play() {
-        this.downloadFrame.setProgress(0, "Launching Client");
+        this.df.setProgress(0, "Launching Client");
         (new Thread(() -> {
             this.setupRuntime();
             ResourceManager resourceManager;
@@ -213,7 +213,7 @@ public class JelloPrelauncher {
                 if (!this.toLaunch.isOffline()) {
                     try {
                         resourceManager.download((current, total) -> {
-                            this.downloadFrame.setProgress((int) (100L * current / total), "Updating Client");
+                            this.df.setProgress((int) (100L * current / total), "Updating Client");
                         });
                     } catch (IOException var6) {
                         var6.printStackTrace();
@@ -223,7 +223,7 @@ public class JelloPrelauncher {
                 throw new RuntimeException(e);
             }
 
-            this.downloadFrame.setVisible(false);
+            this.df.setVisible(false);
             boolean macos = false;
             boolean windows = false;
             String osName = System.getProperty("os.name");
