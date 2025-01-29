@@ -21,7 +21,7 @@ public class DownloadFrame extends JFrame implements ActionListener {
     private final JProgressBar jProgressBar = new JProgressBar();
     private final JelloButton play = new JelloButton("Play!");
     private final JLabel label = new JLabel();
-    private final JComboBox<String> comboBox;
+    public final JComboBox<String> comboBox;
     Thread autoPlay;
 
     public DownloadFrame() throws HeadlessException {
@@ -107,11 +107,51 @@ public class DownloadFrame extends JFrame implements ActionListener {
     public void setVersions(HashMap<String, Version> hashMap) {
         this.play.setEnabled(true);
 
+        Entry<String, Version> one_sixteen = null;
+
         for (Entry<String, Version> stringVersionEntry : hashMap.entrySet()) {
-            this.comboBox.addItem(stringVersionEntry.getValue().getDisplayName());
+            if (stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
+                this.comboBox.addItem(stringVersionEntry.getValue().getDisplayName());
+                one_sixteen = stringVersionEntry;
+                break;
+            }
         }
 
-        this.autoPlay.start();
+        for (Entry<String, Version> stringVersionEntry : hashMap.entrySet()) {
+            if (!stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
+                this.comboBox.addItem(stringVersionEntry.getValue().getDisplayName());
+            }
+        }
+
+        if (one_sixteen != null)
+            if (one_sixteen.getValue().getId().contains("1.16.4"))
+                JelloPrelauncher.shared.toLaunch = one_sixteen.getValue();
+
+        comboBox.setSelectedItem("1.16.4 - 1.8 (Optifine)");
+
+        if (this.autoPlay == null || !this.autoPlay.isAlive()) {
+            this.autoPlay = new Thread(() -> {
+                for (int i = 0; i < 10; ++i) {
+                    this.label.setText("Auto Play in " + (10 - i) + "s..");
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+
+                    try {
+                        Thread.sleep(1000L);
+                    } catch (InterruptedException var3) {
+                        return;
+                    }
+
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                }
+
+                SwingUtilities.invokeLater(() -> JelloPrelauncher.shared.play());
+            });
+            this.autoPlay.start();
+        }
     }
 
     public void setProgress(int progress, String name) {

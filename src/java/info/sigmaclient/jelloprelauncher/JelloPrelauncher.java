@@ -6,12 +6,8 @@ import info.sigmaclient.jelloprelauncher.resources.type.Library;
 import info.sigmaclient.jelloprelauncher.versions.Version;
 import info.sigmaclient.jelloprelauncher.versions.VersionManager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javax.swing.*;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -21,7 +17,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.SwingUtilities;
 
 public class JelloPrelauncher {
     public static JelloPrelauncher shared;
@@ -29,7 +24,7 @@ public class JelloPrelauncher {
     private static String[] launchArgs;
     private static final File sigmaDir = Utils.getSigmaDirectory();
     private static final File jreDir;
-    private Version toLaunch;
+    public Version toLaunch;
     private final VersionManager versionManager;
 
     public static void main(String[] args) {
@@ -46,14 +41,15 @@ public class JelloPrelauncher {
 
     public JelloPrelauncher(String[] args) {
         System.out.println("Starting...");
-        new File(sigmaDir, "SigmaJello.jar");
+        shared = this;
         launchArgs = args;
         this.versionManager = new VersionManager("https://jelloprg.sigmaclient.cloud/version_manifest.json");
         this.setupWindow();
         Iterator<Entry<String, Version>> var3 = this.versionManager.getVersions().entrySet().iterator();
         if (var3.hasNext()) {
             Entry<String, Version> v = var3.next();
-            this.toLaunch = v.getValue();
+            if (v.getValue().getId().contains("1.16.4"))
+                this.toLaunch = v.getValue();
         }
 
         this.df.setVersions(this.versionManager.getVersions());
@@ -212,9 +208,7 @@ public class JelloPrelauncher {
 
                 if (!this.toLaunch.isOffline()) {
                     try {
-                        resourceManager.download((current, total) -> {
-                            this.df.setProgress((int) (100L * current / total), "Updating Client");
-                        });
+                        resourceManager.download((current, total) -> this.df.setProgress((int) ((current * 100.0) / total), "Updating Client"));
                     } catch (IOException var6) {
                         var6.printStackTrace();
                     }
@@ -247,7 +241,7 @@ public class JelloPrelauncher {
 
     public void setVersion(String s) {
         for (Entry<String, Version> stringVersionEntry : this.versionManager.getVersions().entrySet()) {
-            if (s.equals(stringVersionEntry.getValue().getDisplayName())) {
+            if (stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
                 this.toLaunch = stringVersionEntry.getValue();
             }
         }
