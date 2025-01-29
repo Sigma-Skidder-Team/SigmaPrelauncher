@@ -254,6 +254,6 @@ public class JelloPrelauncher {
     }
 
     static {
-        jreDir = new File(sigmaDir, "jre1.8.0_202");
+        jreDir = new File(sigmaDir, "jre17.0.14");
     }
 }
