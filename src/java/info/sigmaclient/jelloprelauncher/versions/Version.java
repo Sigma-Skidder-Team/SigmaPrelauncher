@@ -30,8 +30,6 @@ public class Version {
                 return "1.16.1 - 1.8 (Optifine)";
             case "1.16.4":
                 return "1.16.4 - 1.8 (Optifine)";
-            case "1.21":
-                return "1.21 - 1.8 (Optifine)";
             default:
                 return this.id;
         }
