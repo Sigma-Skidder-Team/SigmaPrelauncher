@@ -101,7 +101,6 @@ public class DownloadFrame extends JFrame implements ActionListener {
             this.autoPlay.interrupt();
             this.label.setText("Select version and play!");
         }
-
     }
 
     public void setVersions(HashMap<String, Version> hashMap) {

@@ -241,7 +241,7 @@ public class JelloPrelauncher {
 
     public void setVersion(String s) {
         for (Entry<String, Version> stringVersionEntry : this.versionManager.getVersions().entrySet()) {
-            if (stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
+            if (stringVersionEntry.getValue().getDisplayName().contains(s)) {
                 this.toLaunch = stringVersionEntry.getValue();
             }
         }
