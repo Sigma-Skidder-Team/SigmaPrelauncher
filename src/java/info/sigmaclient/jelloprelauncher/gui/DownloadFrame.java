@@ -10,7 +10,9 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import javax.imageio.ImageIO;
@@ -106,27 +108,30 @@ public class DownloadFrame extends JFrame implements ActionListener {
     public void setVersions(HashMap<String, Version> hashMap) {
         this.play.setEnabled(true);
 
-        Entry<String, Version> one_sixteen = null;
-
-        for (Entry<String, Version> stringVersionEntry : hashMap.entrySet()) {
-            if (stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
-                this.comboBox.addItem(stringVersionEntry.getValue().getDisplayName());
-                one_sixteen = stringVersionEntry;
-                break;
-            }
+        List<String> versions = new ArrayList<>();
+        for (Entry<String, Version> entry : hashMap.entrySet()) {
+            versions.add(entry.getValue().getDisplayName());
         }
 
-        for (Entry<String, Version> stringVersionEntry : hashMap.entrySet()) {
-            if (!stringVersionEntry.getValue().getDisplayName().contains("1.16.4")) {
-                this.comboBox.addItem(stringVersionEntry.getValue().getDisplayName());
+        // Sort: Alphabetical first, numbers last
+        versions.sort((a, b) -> {
+            boolean aIsNumeric = Character.isDigit(a.charAt(0));
+            boolean bIsNumeric = Character.isDigit(b.charAt(0));
+
+            if (aIsNumeric && !bIsNumeric) {
+                return 1; // Numbers go after letters
+            } else if (!aIsNumeric && bIsNumeric) {
+                return -1; // Letters go before numbers
+            } else {
+                return a.compareToIgnoreCase(b); // Regular alphabetical sort
             }
+        });
+
+        // Update comboBox
+        this.comboBox.removeAllItems();
+        for (String version : versions) {
+            this.comboBox.addItem(version);
         }
-
-        if (one_sixteen != null)
-            if (one_sixteen.getValue().getId().contains("1.16.4"))
-                JelloPrelauncher.shared.toLaunch = one_sixteen.getValue();
-
-        comboBox.setSelectedItem("1.16.4 - 1.8 (Optifine)");
 
         if (this.autoPlay == null || !this.autoPlay.isAlive()) {
             this.autoPlay = new Thread(() -> {
@@ -138,7 +143,7 @@ public class DownloadFrame extends JFrame implements ActionListener {
 
                     try {
                         Thread.sleep(1000L);
-                    } catch (InterruptedException var3) {
+                    } catch (InterruptedException ignored) {
                         return;
                     }
 

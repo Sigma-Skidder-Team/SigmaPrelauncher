@@ -43,13 +43,12 @@ public class JelloPrelauncher {
         System.out.println("Starting...");
         shared = this;
         launchArgs = args;
-        this.versionManager = new VersionManager("https://jelloprg.sigmaclient.cloud/version_manifest.json");
+        this.versionManager = new VersionManager();
         this.setupWindow();
         Iterator<Entry<String, Version>> var3 = this.versionManager.getVersions().entrySet().iterator();
         if (var3.hasNext()) {
             Entry<String, Version> v = var3.next();
-            if (v.getValue().getId().contains("1.16.4"))
-                this.toLaunch = v.getValue();
+            this.toLaunch = v.getValue();
         }
 
         this.df.setVersions(this.versionManager.getVersions());
