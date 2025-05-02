@@ -1,5 +1,7 @@
-
 /.idea
+
 /out
-/logs
+/target
+
 *.iml
+*.jar
