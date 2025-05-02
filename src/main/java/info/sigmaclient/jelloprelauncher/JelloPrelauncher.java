@@ -1,12 +1,11 @@
 package info.sigmaclient.jelloprelauncher;
 
 import info.sigmaclient.jelloprelauncher.gui.DownloadFrame;
-import info.sigmaclient.jelloprelauncher.resources.ResourceManager;
-import info.sigmaclient.jelloprelauncher.resources.type.Library;
+import info.sigmaclient.jelloprelauncher.ressources.RessourceManager;
+import info.sigmaclient.jelloprelauncher.ressources.type.Library;
 import info.sigmaclient.jelloprelauncher.versions.Version;
 import info.sigmaclient.jelloprelauncher.versions.VersionManager;
 
-import javax.swing.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -17,41 +16,43 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.swing.SwingUtilities;
 
 public class JelloPrelauncher {
     public static JelloPrelauncher shared;
     DownloadFrame df;
     private static String[] launchArgs;
-    private static final File sigmaDir = Utils.getSigmaDirectory();
-    private static final File jreDir;
-    public Version toLaunch;
-    private final VersionManager versionManager;
+    private static File sigmaDir = Utils.getSigmaDirectory();
+    private static File jreDir;
+    private Version toLaunch;
+    private VersionManager versionManager;
 
     public static void main(String[] args) {
+        shared = new JelloPrelauncher(args);
+    }
+
+    public static RessourceManager getRessourceManager(Version version) throws IOException {
+        System.out.println(version.getDisplayName());
+        return version.isOffline() ? new RessourceManager(new File(version.getUrl())) : new RessourceManager(version.getUrl());
+    }
+
+    public JelloPrelauncher(String[] args) {
         if (!sigmaDir.exists()) {
             sigmaDir.mkdirs();
         }
 
-        shared = new JelloPrelauncher(args);
-    }
-
-    public static ResourceManager getResourceManager(Version version) throws IOException {
-        return version.isOffline() ? new ResourceManager(new File(version.getUrl())) : new ResourceManager(version.getUrl());
-    }
-
-    public JelloPrelauncher(String[] args) {
         System.out.println("Starting...");
-        shared = this;
+        new File(sigmaDir, "SigmaJello.jar");
         launchArgs = args;
-        this.versionManager = new VersionManager();
+        this.versionManager = new VersionManager("https://jelloprg.sigmaclient.cloud/version_manifest.json");
         this.setupWindow();
-        Iterator<Entry<String, Version>> var3 = this.versionManager.getVersions().entrySet().iterator();
-        if (var3.hasNext()) {
-            Entry<String, Version> v = var3.next();
-            this.toLaunch = v.getValue();
-        }
-
         this.df.setVersions(this.versionManager.getVersions());
+        versionManager.getVersions().forEach((s, version) -> {
+            String display = version.getDisplayName();
+            if (display.contains("Nightly") && !display.contains("Pojav")) {
+                toLaunch = version;
+            }
+        });
     }
 
     public void setupRuntime() {
@@ -100,7 +101,6 @@ public class JelloPrelauncher {
                 f.setExecutable(true);
             }
         }
-
     }
 
     private void setupWindow() {
@@ -118,82 +118,85 @@ public class JelloPrelauncher {
     }
 
     private ArrayList<File> getFilesRecursive(File pFile) {
-        ArrayList<File> fileList = new ArrayList<>();
+        ArrayList f = new ArrayList();
+        File[] v3 = pFile.listFiles();
+        int i4 = v3.length;
 
-        if (pFile != null && pFile.isDirectory()) {
-            File[] files = pFile.listFiles();
-
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        fileList.addAll(this.getFilesRecursive(file));
-                    } else {
-                        fileList.add(file);
-                    }
-                }
+        for (int i5 = 0; i5 < i4; ++i5) {
+            File files = v3[i5];
+            if (files.isDirectory()) {
+                f.addAll(this.getFilesRecursive(files));
             } else {
-                System.err.println("Warning: listFiles() returned null for directory: " + pFile.getAbsolutePath());
+                f.add(files);
             }
-        } else {
-            System.err.println("Warning: Provided file is not a valid directory: " + (pFile != null ? pFile.getAbsolutePath() : "null"));
         }
 
-        return fileList;
+        return f;
     }
 
-    public static void launchGame(ResourceManager manager, String jreBinLoc, boolean macos, boolean windows) {
-        String mainClass = "net.minecraft.client.main.Main";
-        String separator = windows ? ";" : ":";
-        StringBuilder classPathBuilder = new StringBuilder();
-        classPathBuilder.append(manager.getClientPath().getAbsolutePath());
+    public static void launchGame(final RessourceManager manager, final String jreBinLoc, final boolean macos) {
+        final String mainClass = "net.minecraft.client.main.Main";
+        final String cpSeparator = System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":";
 
+        StringBuilder classPathBuilder = new StringBuilder(manager.getClientPath().getAbsolutePath());
         for (Library lib : manager.getLibraries()) {
-            classPathBuilder.append(separator);
-            classPathBuilder.append(lib.getFilePath().getAbsolutePath());
+            classPathBuilder.append(cpSeparator).append(lib.getFilePath().getAbsolutePath());
         }
 
-        List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        ArrayList<String> jvmArgs = new ArrayList<>();
-        jvmArgs.add(jreBinLoc);
+        List<String> jvmArgs = new ArrayList<>();
+        jvmArgs.add(jreBinLoc); // full path to java binary
         if (macos) {
             jvmArgs.add("-XstartOnFirstThread");
         }
 
-        if (launchArgs != null && launchArgs.length != 0) {
-            jvmArgs.addAll(inputArguments);
-        } else {
-            String assets = (new File(Utils.getWorkingDirectory(), "assets")).getAbsolutePath();
-            launchArgs = new String[]{"--version", "mcp", "--accessToken", "0", "--assetsDir", assets, "--assetIndex", manager.getClient().getAssetsVersion(), "--userProperties", "{}"};
+        // Optional: JVM tuning or custom arguments from current process
+        List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        for (String arg : inputArguments) {
+            if (!arg.contains("-agentlib")) { // exclude things like agentlib if not needed
+                jvmArgs.add(arg);
+            }
         }
 
         jvmArgs.add("-cp");
         jvmArgs.add(classPathBuilder.toString());
         jvmArgs.add(mainClass);
-        jvmArgs.addAll(Arrays.asList(launchArgs));
-        StringBuilder sb = new StringBuilder("Launching game");
 
-        for (String arg : jvmArgs) {
-            sb.append(" ").append(arg);
+        if (JelloPrelauncher.launchArgs == null || JelloPrelauncher.launchArgs.length == 0) {
+            String assets = new File(Utils.getWorkingDirectory(), "assets").getAbsolutePath();
+            JelloPrelauncher.launchArgs = new String[]{
+                    "--version", "mcp",
+                    "--accessToken", "0",
+                    "--assetsDir", assets,
+                    "--assetIndex", manager.getClient().getAssetsVersion(),
+                    "--userProperties", "{}"
+            };
         }
 
-        System.out.println(sb);
+        jvmArgs.addAll(Arrays.asList(JelloPrelauncher.launchArgs));
+
+        System.out.println("Launching game with arguments:");
+        for (String arg : jvmArgs) {
+            System.out.println(arg);
+        }
 
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(jvmArgs);
+            processBuilder.directory(Utils.getWorkingDirectory()); // optional: set working dir
             processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-            InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
 
-            String line;
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
+            Process process = processBuilder.start();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
 
-            process.waitFor();
-        } catch (Exception var17) {
-            var17.printStackTrace();
+            int exitCode = process.waitFor();
+            System.out.println("Game process exited with code: " + exitCode);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -201,52 +204,55 @@ public class JelloPrelauncher {
         this.df.setProgress(0, "Launching Client");
         (new Thread(() -> {
             this.setupRuntime();
-            ResourceManager resourceManager;
+            RessourceManager ressourceManager = null;
             try {
-                resourceManager = getResourceManager(this.toLaunch);
-
-                if (!this.toLaunch.isOffline()) {
-                    try {
-                        resourceManager.download((current, total) -> this.df.setProgress((int) ((current * 100.0) / total), "Updating Client"));
-                    } catch (IOException var6) {
-                        var6.printStackTrace();
-                    }
-                }
+                ressourceManager = getRessourceManager(this.toLaunch);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
+            if (!this.toLaunch.isOffline()) {
+                try {
+                    ressourceManager.download((current, total) -> {
+                        this.df.setProgress((int) (100L * current / total), "Updating Client");
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             this.df.setVisible(false);
-            boolean macos = false;
-            boolean windows = false;
+            boolean i2 = false;
             String osName = System.getProperty("os.name");
             String jreBinLoc;
             if (!osName.startsWith("Mac") && !osName.startsWith("Darwin")) {
                 if (osName.toLowerCase().contains("windows")) {
                     jreBinLoc = jreDir.getAbsolutePath() + File.separator + "bin" + File.separator + "java.exe";
-                    windows = true;
                 } else {
                     jreBinLoc = jreDir.getAbsolutePath() + File.separator + "bin" + File.separator + "java";
                 }
             } else {
                 jreBinLoc = jreDir.getAbsolutePath() + File.separator + "Contents" + File.separator + "Home" + File.separator + "bin" + File.separator + "java";
-                macos = true;
+                i2 = true;
             }
 
-            launchGame(resourceManager, jreBinLoc, macos, windows);
+            launchGame(ressourceManager, jreBinLoc, i2);
             System.exit(0);
         })).start();
     }
 
     public void setVersion(String s) {
-        for (Entry<String, Version> stringVersionEntry : this.versionManager.getVersions().entrySet()) {
-            if (stringVersionEntry.getValue().getDisplayName().contains(s)) {
-                this.toLaunch = stringVersionEntry.getValue();
+        Iterator v2 = this.versionManager.getVersions().entrySet().iterator();
+
+        while (v2.hasNext()) {
+            Entry entry = (Entry) v2.next();
+            if (s.equals(((Version) entry.getValue()).getDisplayName())) {
+                this.toLaunch = (Version) entry.getValue();
             }
         }
     }
 
     static {
-        jreDir = new File(sigmaDir, "jre17.0.14");
+        jreDir = new File(sigmaDir, "jre1.8.0_202");
     }
 }

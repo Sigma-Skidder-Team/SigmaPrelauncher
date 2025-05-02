@@ -1,4 +1,4 @@
-package info.sigmaclient.jelloprelauncher.resources.type;
+package info.sigmaclient.jelloprelauncher.ressources.type;
 
 import info.sigmaclient.jelloprelauncher.versions.VersionManager;
 

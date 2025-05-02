@@ -1,8 +1,9 @@
 package info.sigmaclient.jelloprelauncher.versions;
 
 public class Version {
-    private final String id, url;
-    private final boolean offline;
+    private String id;
+    private String url;
+    private boolean offline;
 
     public Version(String id, String url, boolean offline) {
         this.id = id;
@@ -23,6 +24,10 @@ public class Version {
     }
 
     public String getDisplayName() {
-        return this.id;
+        if (this.id.equals("1.16-rc1")) {
+            return "1.16.1 - 1.8 (Optifine)";
+        } else {
+            return this.id.equals("1.16.4") ? "1.16.4 - 1.8 (Optifine)" : this.id;
+        }
     }
 }

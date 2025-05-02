@@ -1,4 +1,4 @@
-package info.sigmaclient.jelloprelauncher.resources.type;
+package info.sigmaclient.jelloprelauncher.ressources.type;
 
 public class Asset {
     private final String name, hash;

@@ -128,9 +128,11 @@ public class DownloadFrame extends JFrame implements ActionListener {
         });
 
         // Update comboBox
-        this.comboBox.removeAllItems();
         for (String version : versions) {
             this.comboBox.addItem(version);
+            if (version.contains("Nightly") && !version.contains("Pojav")) {
+                comboBox.setSelectedItem("1.21.5 - 1.7.10 (Nightly)");
+            }
         }
 
         if (this.autoPlay == null || !this.autoPlay.isAlive()) {

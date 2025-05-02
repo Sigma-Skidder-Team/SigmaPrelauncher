@@ -1,4 +1,4 @@
-package info.sigmaclient.jelloprelauncher.resources;
+package info.sigmaclient.jelloprelauncher.ressources;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -6,26 +6,29 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import info.sigmaclient.jelloprelauncher.DownloadProgress;
 import info.sigmaclient.jelloprelauncher.Utils;
-import info.sigmaclient.jelloprelauncher.resources.type.Asset;
-import info.sigmaclient.jelloprelauncher.resources.type.Client;
-import info.sigmaclient.jelloprelauncher.resources.type.Library;
+import info.sigmaclient.jelloprelauncher.ressources.type.Asset;
+import info.sigmaclient.jelloprelauncher.ressources.type.Client;
+import info.sigmaclient.jelloprelauncher.ressources.type.Library;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ResourceManager {
+public class RessourceManager {
     private final List<Library> libraries = new ArrayList<>();
     private final List<Asset> assets = new ArrayList<>();
     private final JsonObject versionJson;
     private JsonObject assetsJson;
     private final Client client;
 
-    public ResourceManager(File jsonFile) throws IOException {
+    public RessourceManager(File jsonFile) throws IOException {
         try (Scanner scanner = new Scanner(jsonFile)) {
             String text = scanner.useDelimiter("\\A").next();
             this.versionJson = Json.parse(text).asObject();
@@ -36,7 +39,7 @@ public class ResourceManager {
         }
     }
 
-    public ResourceManager(String jsonUrl) {
+    public RessourceManager(String jsonUrl) {
         this.versionJson = Utils.queryJson(jsonUrl);
         String versionName = versionJson.getString("id", null);
         String versionAssets = versionJson.getString("assets", null);
@@ -54,7 +57,8 @@ public class ResourceManager {
         parseAssets();
         parseLibraries();
     }
-
+	
+	
     private void parseAssets() {
         JsonObject assetObjects = assetsJson.get("objects").asObject();
         for (String name : assetObjects.names()) {
@@ -85,8 +89,8 @@ public class ResourceManager {
             }
         }
     }
-
-    private void handleNatives(JsonObject libraryJson, String osName, String arch) {
+	
+	private void handleNatives(JsonObject libraryJson, String osName, String arch) {
         JsonObject natives = libraryJson.get("natives").asObject();
         String nativeName = natives.getString(osName, natives.getString(osName + arch, null));
 
@@ -102,8 +106,8 @@ public class ResourceManager {
             libraries.add(new Library(path, nativeJson.getString("sha1", null), nativeJson.getInt("size", 0), nativeJson.getString("url", null)));
         }
     }
-
-    private boolean isAllowedByRules(JsonObject libraryJson, String osName) {
+	
+	private boolean isAllowedByRules(JsonObject libraryJson, String osName) {
         if (libraryJson.get("rules") == null) return true;
 
         boolean allowed = false;
@@ -134,8 +138,8 @@ public class ResourceManager {
         downloadedSize += downloadClient(progress, totalSize, downloadedSize);
         saveJsonFiles();
     }
-
-    private int calculateTotalDownloadSize() {
+	
+	private int calculateTotalDownloadSize() {
         return assets.stream().mapToInt(Asset::getSize).sum()
                 + libraries.stream().mapToInt(Library::getSize).sum()
                 + client.getSize();
@@ -150,8 +154,8 @@ public class ResourceManager {
         }
         return 0;
     }
-
-    private int downloadLibrary(Library library, DownloadProgress progress, int totalSize, int downloadedSize) throws IOException {
+	
+	private int downloadLibrary(Library library, DownloadProgress progress, int totalSize, int downloadedSize) throws IOException {
         File destination = new File(Utils.getWorkingDirectory(), "libraries" + File.separator + library.getPath().replace("//", File.separator));
 
         String sha1 = library.getHash();
@@ -189,8 +193,8 @@ public class ResourceManager {
             }
         }
     }
-
-    private int downloadClient(DownloadProgress progress, int totalSize, int downloadedSize) {
+	
+	private int downloadClient(DownloadProgress progress, int totalSize, int downloadedSize) {
         File clientPath = getClientPath();
 
         String sha1 = client.getHash();
@@ -202,22 +206,22 @@ public class ResourceManager {
         }
         return 0;
     }
-
-    private void saveJsonFiles() throws IOException {
+	    
+	private void saveJsonFiles() throws IOException {
         Files.write(getClientJsonPath().toPath(), versionJson.toString().getBytes());
         Files.write(getAssetsJsonPath().toPath(), assetsJson.toString().getBytes());
     }
 
     public File getClientPath() {
-        return new File(client.getClientWorkingDir(), client.getName() + ".jar");
+        return new File(this.client.getClientWorkingDir(), this.client.getName() + ".jar");
     }
 
     public File getClientJsonPath() {
-        return new File(client.getClientWorkingDir(), client.getName() + ".json");
+        return new File(this.client.getClientWorkingDir(), this.client.getName() + ".json");
     }
 
     public File getAssetsJsonPath() {
-        return new File(Utils.getWorkingDirectory(), "assets" + File.separator + "indexes" + File.separator + client.getAssetsVersion() + ".json");
+        return new File(Utils.getWorkingDirectory(), "assets" + File.separator + "indexes" + File.separator + this.client.getAssetsVersion() + ".json");
     }
 
     public List<Asset> getAssets() {
@@ -229,6 +233,6 @@ public class ResourceManager {
     }
 
     public Client getClient() {
-        return client;
+        return this.client;
     }
 }
