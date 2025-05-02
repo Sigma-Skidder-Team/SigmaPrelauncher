@@ -68,10 +68,16 @@ public class JelloPrelauncher {
             platform = "mac";
         }
 
+        String jre = "jre";
+        if (this.toLaunch.getDisplayName().contains("Nightly") && !this.toLaunch.getDisplayName().contains("Pojav")) {
+            jre = "jre17";
+            jreDir = new File(sigmaDir, "jre17.0.15");
+        }
+
         if (!jreDir.exists()) {
             try {
-                File temporaryJreFile = File.createTempFile("sigma", "jre");
-                Utils.downloadFileFromUrl("https://jelloprg.sigmaclient.cloud/download/" + platform + "/jre", temporaryJreFile, (totalDownloadedSize, totalFileSize) -> this.df.setProgress((int) (100L * totalDownloadedSize / totalFileSize), "Updating Runtime"));
+                File temporaryJreFile = File.createTempFile("sigma", jre);
+                Utils.downloadFileFromUrl("https://jelloprg.sigmaclient.cloud/download/" + platform + "/" + jre, temporaryJreFile, (totalDownloadedSize, totalFileSize) -> this.df.setProgress((int) (100L * totalDownloadedSize / totalFileSize), "Updating Runtime"));
                 byte[] buffer = new byte[1024];
                 ZipInputStream zis = new ZipInputStream(Files.newInputStream(temporaryJreFile.toPath()));
 
