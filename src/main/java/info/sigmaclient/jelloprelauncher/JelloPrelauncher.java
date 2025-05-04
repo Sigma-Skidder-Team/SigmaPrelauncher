@@ -69,7 +69,7 @@ public class JelloPrelauncher {
         }
 
         String jre = "jre";
-        if (this.toLaunch.getDisplayName().contains("Nightly") && !this.toLaunch.getDisplayName().contains("Pojav")) {
+        if (this.toLaunch.getDisplayName().contains("Nightly")) {
             jre = "jre17";
             jreDir = new File(sigmaDir, "jre17.0.15");
         }
