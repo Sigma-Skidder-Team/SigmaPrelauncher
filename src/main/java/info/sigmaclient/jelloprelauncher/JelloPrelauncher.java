@@ -49,8 +49,13 @@ public class JelloPrelauncher {
         this.df.setVersions(this.versionManager.getVersions());
         versionManager.getVersions().forEach((s, version) -> {
             String display = version.getDisplayName();
-            if (display.contains("Nightly") && !display.contains("Pojav")) {
-                toLaunch = version;
+
+            if (display.contains("Nightly")) {
+                if (Utils.isPojav() && display.contains("Pojav")) {
+                    toLaunch = version;
+                } else if (!Utils.isPojav() && !display.contains("Pojav")) {
+                    toLaunch = version;
+                }
             }
         });
     }

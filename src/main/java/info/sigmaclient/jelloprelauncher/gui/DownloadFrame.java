@@ -1,6 +1,7 @@
 package info.sigmaclient.jelloprelauncher.gui;
 
 import info.sigmaclient.jelloprelauncher.JelloPrelauncher;
+import info.sigmaclient.jelloprelauncher.Utils;
 import info.sigmaclient.jelloprelauncher.versions.Version;
 
 import java.awt.Color;
@@ -130,8 +131,8 @@ public class DownloadFrame extends JFrame implements ActionListener {
         // Update comboBox
         for (String version : versions) {
             this.comboBox.addItem(version);
-            if (version.contains("Nightly") && !version.contains("Pojav")) {
-                comboBox.setSelectedItem("1.21.5 - 1.7.10 (Nightly)");
+            if (version.contains("Nightly")) {
+                comboBox.setSelectedItem(Utils.isPojav() ? "1.21.5 - 1.7.10 (Pojav-Nightly)" : "1.21.5 - 1.7.10 (Nightly)");
             }
         }
 

@@ -17,6 +17,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Utils {
+    public static boolean isPojav() {
+        try {
+            // Check for a Pojav-specific class or package
+            Class.forName("net.kdt.pojavlaunch.Tools");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     public static String queryUrl(String url) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();

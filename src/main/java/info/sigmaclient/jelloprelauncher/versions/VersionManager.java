@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.HashMap;
 
 public class VersionManager {
-    HashMap<String, Version> versions = new HashMap();
+    HashMap<String, Version> versions = new HashMap<>();
 
     public VersionManager(String versionUrl) {
         if (!VersionManager.getVersionFolder().exists()) {
